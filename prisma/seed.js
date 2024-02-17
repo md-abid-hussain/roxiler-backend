@@ -8,9 +8,13 @@ async function main(){
     const transactionDataJson = await transactionData.json()
 
     for(let data of transactionDataJson){
+        const id = data['id'];
         delete data['id']
         await prisma.transaction.create({
-            data:data
+            data:{
+                productId: id,
+                ...data
+            }
         })
     }
 }
