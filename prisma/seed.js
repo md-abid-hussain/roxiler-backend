@@ -4,12 +4,12 @@ const prisma = new PrismaClient()
 
 async function main(){
     const dataSource = process.env.DATA_SOURCE
-    const salesDataResponse = await fetch(dataSource)
-    const salesDataJson = await salesDataResponse.json()
+    const transactionData = await fetch(dataSource)
+    const transactionDataJson = await transactionData.json()
 
-    for(let data of salesDataJson){
+    for(let data of transactionDataJson){
         delete data['id']
-        await prisma.salesData.create({
+        await prisma.transaction.create({
             data:data
         })
     }

@@ -7,7 +7,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model SalesData {
+model Transaction {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
   category    String
   dateOfSale  DateTime @db.Date
