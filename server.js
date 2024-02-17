@@ -1,10 +1,13 @@
-require('dotenv').config()
-const express = require('express')
+require("dotenv").config();
+const express = require("express");
 
-const app = express()
+const app = express();
+app.use(express.urlencoded({ extended: false }));
 
-const PORT = process.env.PORT || 4000
+const PORT = process.env.PORT || 4000;
 
-app.listen(PORT, ()=>{
-    console.log(`server is running on http://localhost:${PORT}`)
-})
+app.use("/api/v1/transactions", require("./routes/transactionRoute"));
+
+app.listen(PORT, () => {
+  console.log(`server is running on http://localhost:${PORT}`);
+});
