@@ -9,6 +9,7 @@ datasource db {
 
 model Transaction {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  productId   Int      @unique
   category    String
   dateOfSale  DateTime @db.Date
   description String
