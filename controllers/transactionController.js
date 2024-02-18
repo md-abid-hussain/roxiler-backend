@@ -14,7 +14,7 @@ const getAllTransactions = asyncHandler(async (req, res) => {
   let skip = (currentPage - 1) * parseInt(limit);
 
   search = search || "";
-
+  const searchRegex = new RegExp(search, "i");
   const results = await prisma.transaction.aggregateRaw({
     pipeline: [
       {
@@ -76,7 +76,9 @@ const getAllTransactions = asyncHandler(async (req, res) => {
   });
 
   const formattedResponse = {
-    totalPages: Math.ceil(results[0].totalItemCount[0].total / parseInt(limit)),
+    totalPages: results[0].totalItemCount.length
+      ? Math.ceil(results[0].totalItemCount[0].total / parseInt(limit))
+      : 0,
     currentPage: currentPage,
     data: results[0].data,
   };
