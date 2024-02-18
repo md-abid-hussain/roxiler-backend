@@ -6,12 +6,12 @@ const SERVER_URL = process.env.SERVER_URL;
 // @route GET /sales
 const getAllTransactions = asyncHandler(async (req, res) => {
   let { month, currentPage, limit, search } = req.query;
-  limit = limit || parseInt(limit);
+  limit = limit || 10;
   if (month === undefined || month < 1 || month > 12) {
     return res.json({ message: "Invalid month" });
   }
   currentPage = currentPage || 1;
-  let skip = (currentPage - 1) * limit;
+  let skip = (currentPage - 1) * parseInt(limit);
 
   search = search || "";
 
