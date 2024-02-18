@@ -215,7 +215,6 @@ const getBarChartData = asyncHandler(async (req, res) => {
     ],
   });
 
-  let formattedResponse = {};
   const labels = [
     "0 - 100",
     "101 - 200",
@@ -228,9 +227,11 @@ const getBarChartData = asyncHandler(async (req, res) => {
     "801 - 900",
     "901-above",
   ];
-  
-  result.forEach((item) => {
-    formattedResponse[item._id] = item.count;
+
+  const formattedResponse = labels.map((label) => {
+    return (
+      result.find((item) => item._id === label) || { _id: label, count: 0 }
+    );
   });
 
   res.json({ ...formattedResponse });
