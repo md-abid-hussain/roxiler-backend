@@ -5,27 +5,22 @@ const SERVER_URL = process.env.SERVER_URL;
 // @desc Get All Sales Data
 // @route GET /sales
 const getAllTransactions = asyncHandler(async (req, res) => {
-  let { month, currentPage } = req.query;
-
+  let { month, currentPage, limit, search } = req.query;
+  limit = limit || parseInt(limit);
   if (month === undefined || month < 1 || month > 12) {
     return res.json({ message: "Invalid month" });
   }
-
   currentPage = currentPage || 1;
-  let skip = (currentPage - 1) * 10;
+  let skip = (currentPage - 1) * limit;
+
+  search = search || "";
+
   const results = await prisma.transaction.aggregateRaw({
     pipeline: [
       {
-        $project: {
+        $set: {
           _id: { $toString: "$_id" },
-          productId: 1,
-          title: 1,
-          price: 1,
-          description: 1,
-          category: 1,
-          image: 1,
-          sold: 1,
-          dateOfSale: 1,
+          dateOfSale: { $toString: "$dateOfSale" },
           month: {
             $month: "$dateOfSale",
           },
@@ -34,6 +29,25 @@ const getAllTransactions = asyncHandler(async (req, res) => {
       {
         $match: {
           month: parseInt(month),
+        },
+      },
+      {
+        $match: {
+          $or: [
+            { title: { $regex: search, $options: "i" } },
+            {
+              description: {
+                $regex: search,
+                $options: "i",
+              },
+            },
+            {
+              price: {
+                $regex: search,
+                $options: "i",
+              },
+            },
+          ],
         },
       },
       {
@@ -53,7 +67,7 @@ const getAllTransactions = asyncHandler(async (req, res) => {
               $skip: skip,
             },
             {
-              $limit: 10,
+              $limit: parseInt(limit),
             },
           ],
         },
@@ -62,7 +76,7 @@ const getAllTransactions = asyncHandler(async (req, res) => {
   });
 
   const formattedResponse = {
-    totalPage: Math.ceil(results[0].totalItemCount[0].total / 10),
+    totalPages: Math.ceil(results[0].totalItemCount[0].total / parseInt(limit)),
     currentPage: currentPage,
     data: results[0].data,
   };
@@ -202,7 +216,19 @@ const getBarChartData = asyncHandler(async (req, res) => {
   });
 
   let formattedResponse = {};
-
+  const labels = [
+    "0 - 100",
+    "101 - 200",
+    "201 - 300",
+    "301 - 400",
+    "401 - 500",
+    "501 - 600",
+    "601 - 700",
+    "701 - 800",
+    "801 - 900",
+    "901-above",
+  ];
+  
   result.forEach((item) => {
     formattedResponse[item._id] = item.count;
   });
@@ -232,38 +258,35 @@ const getPieChartData = asyncHandler(async (req, res) => {
       {
         $group: {
           _id: "$category",
-          count: {
+          value: {
             $sum: 1,
           },
         },
       },
     ],
   });
-  let formattedResponse = {};
-  result.forEach((item) => {
-    formattedResponse[item._id] = item.count;
+
+  let formattedResponse = result.map((item) => {
+    return {
+      label: item._id,
+      value: item.value,
+    };
   });
-  res.json({ ...formattedResponse });
+  res.json(formattedResponse);
 });
 
 // @desc Get Monthly Stats
 // @route GET /monthly-stats
 const getMonthlyStats = asyncHandler(async (req, res) => {
   const { month } = req.query;
-  const statsResponse = await fetch(
-    SERVER_URL+`stats?month=${month}`
-  );
+  const statsResponse = await fetch(SERVER_URL + `stats?month=${month}`);
   const statData = await statsResponse.json();
 
-  const barChartResponse = await fetch(
-    SERVER_URL+`bar-chart?month=${month}`
-  );
+  const barChartResponse = await fetch(SERVER_URL + `bar-chart?month=${month}`);
 
   const barChartData = await barChartResponse.json();
 
-  const pieChartResponse = await fetch(
-    SERVER_URL+`pie-chart?month=${month}`
-  );
+  const pieChartResponse = await fetch(SERVER_URL + `pie-chart?month=${month}`);
 
   const pieChartData = await pieChartResponse.json();
 
