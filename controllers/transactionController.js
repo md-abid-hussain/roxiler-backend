@@ -136,9 +136,9 @@ const getStats = asyncHandler(async (req, res) => {
   });
 
   const formattedResult = {
-    totalPrice: result[0].pricePipe[0].totalPrice,
-    sold: result[0].soldUnsoldPipe[1].count,
-    unsold: result[0].soldUnsoldPipe[0].count,
+    totalPrice: result[0]?.pricePipe[0]?.totalPrice || 0,
+    sold: result[0]?.soldUnsoldPipe[1]?.count || 0,
+    unsold: result[0]?.soldUnsoldPipe[0]?.count || 0,
   };
   res.json({ ...formattedResult });
 });
